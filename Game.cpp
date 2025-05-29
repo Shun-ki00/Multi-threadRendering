@@ -217,6 +217,39 @@ void Game::Render()
     // 画面サイズを取得する
     GetDefaultSize(screenWidth, screenHeight);
 
+    // 射影行列を生成する 
+    DirectX::SimpleMath::Matrix projection = DirectX::SimpleMath::Matrix::CreatePerspectiveFieldOfView(
+        DirectX::XMConvertToRadians(45.0f),
+        screenWidth / (float)screenHeight,
+        0.1f,
+        100.0f
+    );
+
+    // ビュー行列を設定する
+    m_basicEffect->SetView(m_commonResources->GetViewMatrix());
+    // プロジェクション行列を設定する
+    m_basicEffect->SetProjection(projection);
+    // ワールド行列を設定する
+    m_basicEffect->SetWorld(DirectX::SimpleMath::Matrix::Identity);
+    // コンテキストを設定する
+    // 深度ステンシルの設定（深度テストを有効化）
+    m_context->OMSetDepthStencilState(nullptr, 0); // デフォルトの深度ステートを使用
+    m_basicEffect->Apply(m_context);
+    // 入力レイアウトを設定する
+    m_context->IASetInputLayout(m_inputLayout.Get());
+
+    // グリッドを描画
+    m_primitiveBatch->Begin();
+    DX::DrawGrid(m_primitiveBatch.get(),
+        { 5.0f, 0.0f, 0.0f },              // 横軸
+        { 0.0f,0.0f,5.0f },                // 縦軸
+        DirectX::SimpleMath::Vector3::Zero, // 原点
+        10,                                 // 横分割数
+        10                                  // 縦分割数
+    );
+
+    m_primitiveBatch->End();
+
     m_spriteBatch->Begin();
     // FPS
     swprintf(stringBuffer, sizeof(stringBuffer) / sizeof(wchar_t), L"FPS : %d", m_timer.GetFramesPerSecond());

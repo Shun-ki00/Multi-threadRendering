@@ -237,23 +237,30 @@ void Scene::Render()
 		std::ref(m_recordingDoneB)
 	);
 	
+	m_threadA.join();
+	m_threadB.join();
 
-	// 両スレッドの終了を待機
-	while (!m_recordingDoneA.load() || !m_recordingDoneB.load()) {
-		std::this_thread::yield(); // 無駄なCPU使用を抑える
-	}
+	m_context->ExecuteCommandList(m_commandListA.Get(), TRUE);
+	m_context->ExecuteCommandList(m_commandListB.Get(), TRUE);
+	m_commandListA.Reset(); // 次のフレームで再利用する場合
+	m_commandListB.Reset(); // 次のフレームで再利用する場合
+
+	//// 両スレッドの終了を待機
+	//while (!m_recordingDoneA.load() || !m_recordingDoneB.load()) {
+	//	std::this_thread::yield(); // 無駄なCPU使用を抑える
+	//}
 
 	// CommandList 実行（DeferredContext で記録された描画コマンド）
-	if (m_commandListA)
-	{
-		m_context->ExecuteCommandList(m_commandListA.Get(), FALSE);
-		m_commandListA.Reset(); // 次のフレームで再利用する場合
-	}
-	if (m_commandListB)
-	{
-		m_context->ExecuteCommandList(m_commandListB.Get(), FALSE);
-		m_commandListB.Reset(); // 次のフレームで再利用する場合
-	}
+	//if (m_commandListA)
+	//{
+	//	m_context->ExecuteCommandList(m_commandListA.Get(), FALSE);
+	//	m_commandListA.Reset(); // 次のフレームで再利用する場合
+	//}
+	//if (m_commandListB)
+	//{
+	//	m_context->ExecuteCommandList(m_commandListB.Get(), FALSE);
+	//	m_commandListB.Reset(); // 次のフレームで再利用する場合
+	//}
 }
 
 /// <summary>
